@@ -1,86 +1,239 @@
-🚖 Uber Real-Time Data Engineering Pipeline on Azure
-📌 Project Overview
+# 🚖 Uber Real-Time Data Engineering Pipeline on Azure
 
-This project demonstrates an end-to-end Data Engineering pipeline on Microsoft Azure that processes both real-time streaming data and batch data to create an analytics-ready data model.
+An **end-to-end streaming data engineering pipeline** built on **Microsoft Azure** that processes **real-time ride events and batch datasets** to create an **analytics-ready Star Schema model**.
 
-The system simulates an Uber-like ride booking platform where ride events are streamed in real time, ingested into Azure services, processed using Azure Databricks (PySpark), and modeled using a Medallion Architecture (Bronze → Silver → Gold).
+The project simulates an **Uber-like ride booking platform** where ride events are streamed through Azure services, processed using **Databricks Structured Streaming**, and transformed into a **Lakehouse architecture (Bronze → Silver → Gold)** for analytics.
 
-This project showcases real-world data engineering practices used in production systems such as streaming ingestion, scalable ETL pipelines, metadata-driven pipelines, and dimensional modeling.
+---
 
-🏗️ Architecture Overview
+# 📌 Project Highlights
 
-The pipeline follows a Lakehouse Architecture built using Azure services.
+* Real-time event ingestion using **Azure Event Hub**
+* Batch + Streaming hybrid data pipeline
+* **Medallion Architecture** (Bronze / Silver / Gold)
+* Data processing using **PySpark on Azure Databricks**
+* **Metadata-driven pipelines**
+* **Slowly Changing Dimensions (SCD Type 2)**
+* **Star Schema dimensional modeling**
 
-Pipeline Flow
+---
 
+# 🏗️ Architecture Overview
+
+The pipeline follows a **Lakehouse Architecture** built using Azure services.
+
+## Pipeline Flow
+
+```
 Event Producer
-⬇
-Azure Event Hub (Streaming Ingestion)
-⬇
-Azure Data Lake Storage – Bronze Layer
-⬇
-Azure Databricks (Streaming + Batch Processing)
-⬇
-Silver Layer (Cleaned & Enriched Data)
-⬇
-Gold Layer (Star Schema for Analytics)
-
-⚙️ Tech Stack
-Programming
-
-Python
-
-PySpark
-
-SQL
-
-Azure Services
-
+      │
+      ▼
 Azure Event Hub
+      │
+      ▼
+Azure Data Lake Storage (Bronze Layer)
+      │
+      ▼
+Azure Databricks (Streaming + Batch Processing)
+      │
+      ▼
+Silver Layer (Cleaned & Enriched Data)
+      │
+      ▼
+Gold Layer (Star Schema for Analytics)
+```
 
-Azure Data Factory
+### System Architecture
 
-Azure Data Lake Storage Gen2
+![Architecture Diagram](Architecture/Architecture.png)
 
-Azure Databricks
+---
 
-Data Engineering Concepts
+# ⚙️ Tech Stack
 
-Real-Time Data Streaming
+### Programming
 
-Batch + Streaming Pipelines
+* Python
+* PySpark
+* SQL
 
-Medallion Architecture
+### Azure Services
 
-Metadata-Driven Pipelines
+* Azure Event Hub
+* Azure Data Factory
+* Azure Data Lake Storage Gen2
+* Azure Databricks
 
-Slowly Changing Dimensions (SCD Type 2)
+### Data Engineering Concepts
 
-Star Schema Data Modeling
+* Real-Time Data Streaming
+* Batch + Streaming Pipelines
+* Medallion Architecture
+* Metadata-Driven Pipelines
+* Slowly Changing Dimensions (SCD Type 2)
+* Star Schema Data Modeling
+* Lakehouse Architecture
 
-Lakehouse Architecture
+---
 
-📂 Repository Structure
+# ☁️ Azure Resource Setup
+
+All Azure services used in the pipeline are deployed inside a dedicated **Azure Resource Group**.
+
+The resource group contains:
+
+* Azure Event Hub
+* Azure Data Factory
+* Azure Databricks
+* Azure Data Lake Storage
+
+### Azure Resource Group
+
+![Azure Resources](Screenshots/1.%20Resource_group.png)
+
+---
+
+# 📡 Real-Time Streaming Pipeline (Azure Event Hub)
+
+Ride booking events are simulated using **Python producer scripts** located in:
+
+```
+Event_Producer_Scripts/
+```
+
+The script generates ride events and sends them to **Azure Event Hub**, which acts as the **real-time ingestion layer**.
+
+Event Hub enables scalable ingestion of streaming ride events before downstream processing.
+
+### Event Hub Streaming
+
+![EventHub Streaming](Screenshots/2.%20Eventhub_Event%20Streaming.png)
+
+---
+
+# 🔄 Batch Data Ingestion (Azure Data Factory)
+
+Static datasets required for the pipeline are ingested using **Azure Data Factory**.
+
+These datasets include:
+
+* Driver information
+* User information
+* Location mapping data
+
+The ADF pipeline fetches these datasets from GitHub and loads them into the **Bronze layer of Azure Data Lake**.
+
+### Azure Data Factory Pipeline
+
+![ADF Pipeline](Screenshots/3.%20ADF_Pipeline%20to%20get%20static%20data%20from%20git.png)
+
+Pipeline configurations are available in:
+
+```
+ADF_Pipeline/
+```
+
+---
+
+# ⚡ Data Processing using Azure Databricks
+
+All transformations are implemented using **Azure Databricks with PySpark**.
+
+Processing includes:
+
+* Streaming ingestion from Event Hub
+* JSON event parsing
+* Data cleansing
+* Joining streaming data with batch datasets
+* Preparing datasets for analytical modeling
+
+### Databricks Processing Pipeline
+
+![Databricks Pipeline](Screenshots/4.%20databricks%20pipeline.png)
+
+Transformation notebooks are stored in:
+
+```
+Code_Files/
+```
+
+---
+
+# 🔁 Slowly Changing Dimensions (SCD Type 2)
+
+The pipeline implements **Slowly Changing Dimension Type 2** to track historical changes in dimension tables such as **driver details**.
+
+Key columns maintained:
+
+```
+effective_start_date
+effective_end_date
+is_current_record
+```
+
+This ensures historical tracking while maintaining the current active record.
+
+### SCD Type 2 Implementation
+
+![SCD Type 2](Screenshots/5.%20SCD_type2.png)
+
+---
+
+# 🪙 Medallion Architecture Implementation
+
+The project follows the **Medallion Architecture pattern** to organize data into layers.
+
+### Bronze Layer
+
+Raw data ingested from:
+
+* Event Hub streaming events
+* Batch datasets via Azure Data Factory
+
+### Silver Layer
+
+Cleaned and enriched datasets created using PySpark transformations.
+
+### Gold Layer
+
+Analytics-ready data modeled using **Star Schema**, optimized for BI and reporting.
+
+### Medallion Architecture Flow
+
+![Medallion Architecture](Screenshots/6.%20Medallian_Arch_Flow_databricks.PNG)
+
+---
+
+# ⭐ Key Data Engineering Concepts Demonstrated
+
+This project demonstrates several **production-grade data engineering practices**:
+
+* Real-time streaming ingestion
+* Hybrid batch + streaming pipelines
+* Lakehouse architecture on Azure
+* Metadata-driven ETL pipelines
+* Medallion architecture (Bronze / Silver / Gold)
+* Slowly Changing Dimensions (Type 2)
+* Star schema dimensional modeling
+* Scalable cloud-based data processing
+
+---
+
+# 📂 Repository Structure
+
+```
 Uber_DE_Project_Azure
 │
 ├── ADF_Pipeline
-│   └── Azure Data Factory pipeline JSON files
 │
 ├── Architecture
-│   └── Architecture diagrams for the pipeline
+│   └── Architecture.png
 │
 ├── Code_Files
 │   ├── Bronze_Layer
-│   │   └── Raw data ingestion notebooks/scripts
-│   │
 │   ├── Silver_Layer
-│   │   └── Data transformation notebooks
-│   │
 │   ├── Gold_Layer
-│   │   └── Star schema creation scripts
-│   │
 │   └── Utilities
-│       └── Helper scripts for transformations
 │
 ├── Data
 │   ├── driver_data
@@ -89,163 +242,35 @@ Uber_DE_Project_Azure
 │   └── location_mapping
 │
 ├── Event_Producer_Scripts
-│   └── Python scripts that simulate ride booking events
 │
 ├── meta_data_configs
-│   └── Metadata configuration files used in the pipeline
 │
 ├── lk-adf-uberproject-dev
-│   └── Azure Data Factory ARM templates
 │
 ├── Screenshots
-│   ├── 1. Resource_group.png
-│   ├── 2. Eventhub_Event Streaming.png
-│   ├── 3. ADF_Pipeline to get static data from git.png
-│   ├── 4. databricks pipeline.png
-│   ├── 5. SCD_type2.png
-│   └── 6. Medallian_Arch_Flow_databricks.PNG
 │
 └── README.md
-☁️ Azure Resource Setup
+```
 
-All Azure services required for the pipeline are created within a dedicated Azure Resource Group.
+---
 
-The resource group includes:
+# 🚀 Future Improvements
 
-Azure Event Hub
+Potential improvements for the project:
 
-Azure Data Factory
+* Build **Power BI dashboards** on Gold layer tables
+* Add **data quality validation checks**
+* Implement **CI/CD pipelines using Azure DevOps**
+* Add **monitoring and alerting for pipelines**
+* Implement **data lineage tracking**
 
-Azure Databricks
+---
 
-Azure Data Lake Storage
+# 👩‍💻 Author
 
-Azure Resource Group
+**Lavanya K**
+Data Analyst | Aspiring Data Engineer
 
-📡 Real-Time Event Streaming (Azure Event Hub)
+---
 
-Ride booking events are simulated using Python producer scripts located in:
-
-Event_Producer_Scripts/
-
-These scripts generate ride events and send them to Azure Event Hub, which acts as the real-time ingestion layer.
-
-Event Hub enables scalable ingestion of streaming data before it is processed by downstream systems.
-
-Event Hub Streaming Setup
-
-🔄 Batch Data Ingestion (Azure Data Factory)
-
-Static datasets required for the pipeline are ingested using Azure Data Factory pipelines.
-
-The ADF pipelines load reference datasets from GitHub into Azure Data Lake Storage (Bronze Layer).
-
-Examples of batch datasets:
-
-Driver information
-
-User information
-
-City/location mapping
-
-Pipeline definitions are stored in:
-
-ADF_Pipeline/
-Azure Data Factory Pipeline
-
-⚡ Data Processing (Azure Databricks)
-
-All transformations and processing are implemented using Azure Databricks with PySpark.
-
-The transformation scripts are organized in:
-
-Code_Files/
-
-Processing steps include:
-
-Streaming ingestion from Event Hub
-
-JSON event parsing
-
-Data cleansing
-
-Joining streaming data with reference tables
-
-Preparing datasets for analytical modeling
-
-Databricks Processing Pipeline
-
-🔁 Slowly Changing Dimension (SCD Type 2)
-
-The pipeline implements SCD Type 2 logic to track historical changes in dimension tables such as driver details.
-
-Key columns maintained:
-
-effective_start_date
-
-effective_end_date
-
-is_current_record
-
-This allows maintaining a complete history of dimension changes.
-
-SCD Type 2 Implementation
-
-🪙 Medallion Architecture Implementation
-
-The pipeline uses the Medallion Architecture, organizing data into three layers.
-
-Bronze Layer
-
-Raw ingested data from streaming and batch sources.
-
-Silver Layer
-
-Cleaned and transformed data with business logic applied.
-
-Gold Layer
-
-Analytics-ready tables modeled using Star Schema.
-
-These tables can be used for BI tools such as Power BI.
-
-Medallion Architecture Flow
-
-⭐ Key Data Engineering Concepts Demonstrated
-
-This project demonstrates multiple production-grade data engineering practices:
-
-Real-time streaming ingestion
-
-Batch + streaming hybrid data pipelines
-
-Lakehouse architecture
-
-Metadata-driven pipeline design
-
-Medallion architecture (Bronze / Silver / Gold)
-
-Slowly Changing Dimensions (Type 2)
-
-Star schema data modeling
-
-Scalable cloud-based data pipelines
-
-🚀 Future Improvements
-
-Possible enhancements for this project:
-
-Build Power BI dashboards on Gold tables
-
-Add data quality validation checks
-
-Implement CI/CD pipelines with Azure DevOps
-
-Add pipeline monitoring and alerting
-
-Implement data lineage tracking
-
-👩‍💻 Author
-
-Lavanya K
-Aspiring Data Engineer | Data Analyst
+⭐ If you found this project useful, consider giving the repository a **star**.
