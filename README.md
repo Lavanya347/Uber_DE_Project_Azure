@@ -48,7 +48,7 @@ Gold Layer (Star Schema for Analytics)
 
 ### System Architecture
 
-![Architecture Diagram](Architecture/Architecture.png)
+![Architecture Diagram](Architecture/Project_Architecture.png)
 
 ---
 
