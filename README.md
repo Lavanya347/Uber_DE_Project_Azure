@@ -1,20 +1,23 @@
 # 🚖 Uber Real-Time Data Engineering Pipeline on Azure
 
-An **end-to-end streaming data engineering pipeline** built on **Microsoft Azure** that processes **real-time ride events and batch datasets** to create an **analytics-ready Star Schema model**.
+An **end-to-end streaming data engineering pipeline** built on **Microsoft Azure** that processes **real-time ride events and batch datasets** to produce an **analytics-ready Star Schema model**.
 
-The project simulates an **Uber-like ride booking platform** where ride events are streamed through Azure services, processed using **Databricks Structured Streaming**, and transformed into a **Lakehouse architecture (Bronze → Silver → Gold)** for analytics.
+This project simulates an **Uber-like ride booking platform** where ride events are streamed through **Azure Event Hub**, processed using **Azure Databricks Structured Streaming**, and transformed into a **Lakehouse architecture (Bronze → Silver → Gold)** for analytical workloads.
+
+The pipeline demonstrates modern **cloud data engineering practices**, including streaming ingestion, batch pipelines, metadata-driven processing, and dimensional modeling.
 
 ---
 
 # 📌 Project Highlights
 
 * Real-time event ingestion using **Azure Event Hub**
-* Batch + Streaming hybrid data pipeline
-* **Medallion Architecture** (Bronze / Silver / Gold)
+* Batch data ingestion using **Azure Data Factory**
 * Data processing using **PySpark on Azure Databricks**
-* **Metadata-driven pipelines**
-* **Slowly Changing Dimensions (SCD Type 2)**
-* **Star Schema dimensional modeling**
+* Implementation of **Medallion Architecture (Bronze / Silver / Gold)**
+* **One Big Table (OBT)** design for integrated datasets
+* **Slowly Changing Dimensions (SCD Type 2)** implementation
+* **Star Schema dimensional modeling** for analytics
+* Scalable **Lakehouse architecture on Azure**
 
 ---
 
@@ -37,7 +40,7 @@ Azure Data Lake Storage (Bronze Layer)
 Azure Databricks (Streaming + Batch Processing)
       │
       ▼
-Silver Layer (Cleaned & Enriched Data)
+Silver Layer (One Big Table - OBT)
       │
       ▼
 Gold Layer (Star Schema for Analytics)
@@ -71,6 +74,7 @@ Gold Layer (Star Schema for Analytics)
 * Medallion Architecture
 * Metadata-Driven Pipelines
 * Slowly Changing Dimensions (SCD Type 2)
+* One Big Table (OBT)
 * Star Schema Data Modeling
 * Lakehouse Architecture
 
@@ -78,9 +82,9 @@ Gold Layer (Star Schema for Analytics)
 
 # ☁️ Azure Resource Setup
 
-All Azure services used in the pipeline are deployed inside a dedicated **Azure Resource Group**.
+All Azure services required for the pipeline are deployed within a dedicated **Azure Resource Group**.
 
-The resource group contains:
+The resource group includes:
 
 * Azure Event Hub
 * Azure Data Factory
@@ -101,9 +105,9 @@ Ride booking events are simulated using **Python producer scripts** located in:
 Event_Producer_Scripts/
 ```
 
-The script generates ride events and sends them to **Azure Event Hub**, which acts as the **real-time ingestion layer**.
+These scripts generate ride events and send them to **Azure Event Hub**, which acts as the **real-time ingestion layer**.
 
-Event Hub enables scalable ingestion of streaming ride events before downstream processing.
+Event Hub allows scalable ingestion of streaming events before downstream processing.
 
 ### Event Hub Streaming
 
@@ -113,7 +117,7 @@ Event Hub enables scalable ingestion of streaming ride events before downstream 
 
 # 🔄 Batch Data Ingestion (Azure Data Factory)
 
-Static datasets required for the pipeline are ingested using **Azure Data Factory**.
+Static reference datasets required for the pipeline are ingested using **Azure Data Factory**.
 
 These datasets include:
 
@@ -121,13 +125,13 @@ These datasets include:
 * User information
 * Location mapping data
 
-The ADF pipeline fetches these datasets from GitHub and loads them into the **Bronze layer of Azure Data Lake**.
+The ADF pipeline retrieves these datasets from GitHub and loads them into the **Bronze layer of Azure Data Lake Storage**.
 
 ### Azure Data Factory Pipeline
 
 ![ADF Pipeline](Screenshots/3.%20ADF_Pipeline%20to%20get%20static%20data%20from%20git.png)
 
-Pipeline configurations are available in:
+Pipeline definitions are available in:
 
 ```
 ADF_Pipeline/
@@ -137,21 +141,21 @@ ADF_Pipeline/
 
 # ⚡ Data Processing using Azure Databricks
 
-All transformations are implemented using **Azure Databricks with PySpark**.
+All transformations and processing logic are implemented using **Azure Databricks with PySpark**.
 
-Processing includes:
+Processing steps include:
 
-* Streaming ingestion from Event Hub
-* JSON event parsing
-* Data cleansing
-* Joining streaming data with batch datasets
+* Streaming ingestion from Azure Event Hub
+* Parsing incoming JSON ride events
+* Data cleansing and validation
+* Enriching streaming events using reference datasets
 * Preparing datasets for analytical modeling
 
 ### Databricks Processing Pipeline
 
 ![Databricks Pipeline](Screenshots/4.%20databricks%20pipeline.png)
 
-Transformation notebooks are stored in:
+Transformation notebooks are stored inside:
 
 ```
 Code_Files/
@@ -159,11 +163,35 @@ Code_Files/
 
 ---
 
+# 🧩 Silver Layer – One Big Table (OBT)
+
+The **Silver layer** integrates both streaming and batch datasets into a unified **One Big Table (OBT)**.
+
+The OBT is created by combining:
+
+* Streaming ride events from **Azure Event Hub**
+* Static reference datasets loaded via **Azure Data Factory**
+
+Transformations performed include:
+
+* JSON parsing
+* Data cleansing
+* Joining ride events with driver, user, and location datasets
+* Standardizing schema and data types
+
+The **OBT acts as a centralized analytical dataset** that contains enriched ride information.
+
+This dataset is then used to generate the **Gold layer dimensional model**.
+
+---
+
 # 🔁 Slowly Changing Dimensions (SCD Type 2)
 
-The pipeline implements **Slowly Changing Dimension Type 2** to track historical changes in dimension tables such as **driver details**.
+The pipeline implements **Slowly Changing Dimension Type 2** to track historical changes in dimension tables.
 
-Key columns maintained:
+For example, **driver information** changes are captured while maintaining history.
+
+Key columns used:
 
 ```
 effective_start_date
@@ -171,32 +199,38 @@ effective_end_date
 is_current_record
 ```
 
-This ensures historical tracking while maintaining the current active record.
+This approach ensures that both **historical and current records are preserved**.
 
 ### SCD Type 2 Implementation
 
-![SCD Type 2](Screenshots/5.%20SCD_type2.png)
+![SCD Type2](Screenshots/5.%20SCD_type2.png)
 
 ---
 
-# 🪙 Medallion Architecture Implementation
+# 🪙 Gold Layer – Star Schema Model
 
-The project follows the **Medallion Architecture pattern** to organize data into layers.
+The **Gold layer** contains analytics-ready tables designed using **Star Schema**.
 
-### Bronze Layer
+This layer is optimized for BI reporting and analytical queries.
 
-Raw data ingested from:
+Typical tables include:
 
-* Event Hub streaming events
-* Batch datasets via Azure Data Factory
+### Fact Table
 
-### Silver Layer
+```
+fact_rides
+```
 
-Cleaned and enriched datasets created using PySpark transformations.
+### Dimension Tables
 
-### Gold Layer
+```
+dim_driver
+dim_user
+dim_location
+dim_date
+```
 
-Analytics-ready data modeled using **Star Schema**, optimized for BI and reporting.
+These tables can be directly used by **BI tools such as Power BI**.
 
 ### Medallion Architecture Flow
 
@@ -206,23 +240,24 @@ Analytics-ready data modeled using **Star Schema**, optimized for BI and reporti
 
 # ⭐ Key Data Engineering Concepts Demonstrated
 
-This project demonstrates several **production-grade data engineering practices**:
+This project demonstrates several production-grade data engineering practices:
 
 * Real-time streaming ingestion
 * Hybrid batch + streaming pipelines
 * Lakehouse architecture on Azure
 * Metadata-driven ETL pipelines
 * Medallion architecture (Bronze / Silver / Gold)
+* One Big Table (OBT) design
 * Slowly Changing Dimensions (Type 2)
 * Star schema dimensional modeling
-* Scalable cloud-based data processing
+* Scalable cloud-based data pipelines
 
 ---
 
 # 📂 Repository Structure
 
-```
-Uber_DE_Project_Azure
+```text
+Uber_Data_Engineer_Project
 │
 ├── ADF_Pipeline
 │
@@ -236,10 +271,13 @@ Uber_DE_Project_Azure
 │   └── Utilities
 │
 ├── Data
-│   ├── driver_data
-│   ├── user_data
-│   ├── ride_data
-│   └── location_mapping
+│   ├── bulk_rides.json
+│   ├── map_cancellation_reasons.json
+│   ├── map_cities.json
+│   ├── map_payment_methods.json
+│   ├── map_ride_statuses.json
+│   ├── map_vehicle_makes.json
+│   └── map_vehicle_types.json
 │
 ├── Event_Producer_Scripts
 │
@@ -256,11 +294,11 @@ Uber_DE_Project_Azure
 
 # 🚀 Future Improvements
 
-Potential improvements for the project:
+Potential enhancements for this project:
 
-* Build **Power BI dashboards** on Gold layer tables
+* Build **Power BI dashboards** using Gold layer tables
 * Add **data quality validation checks**
-* Implement **CI/CD pipelines using Azure DevOps**
+* Implement **CI/CD pipelines with Azure DevOps**
 * Add **monitoring and alerting for pipelines**
 * Implement **data lineage tracking**
 
@@ -268,9 +306,16 @@ Potential improvements for the project:
 
 # 👩‍💻 Author
 
-**Lavanya K**
+Hi, I’m **Lavanya** 👋
+I’m a Data Analyst and aspiring **Data Engineer** passionate about building data-driven solutions.
+I enjoy working with SQL, data warehousing, and analytics to transform raw data into meaningful insights.
+This project is part of my portfolio to demonstrate hands-on experience in **data engineering and analytics**.
+
+## 🔗 Connect with Me
+🔗 **[LinkedIn Profile](https://www.linkedin.com/in/lavanya-lk)**  
+📧 **Email:** lavanya347@gmail.com  
+Lavanya K  
+
 Data Analyst | Aspiring Data Engineer
 
 ---
-
-⭐ If you found this project useful, consider giving the repository a **star**.
